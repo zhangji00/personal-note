@@ -23,3 +23,59 @@
    <br>awk处理第二行时hehe是最后一个字段$NF == hehe => ++State[hehe]
    <br>awk处理第三行时haha是最后一个字段$NF == haha => ++State[haha]
    <br>结束时State[haha] == 2 State[hehe] == 1
+5. observer 远程调试服务器应用
+   <br>elixir 应用跑在服务器上想监测程序状态？observer 无法直接运行在ssh登录的无界面环境中
+   <br>此时可以利用ssh建立通道让本地端口重定向到远程服务器
+   <br>服务器端:
+   ```
+        1. iex --name serv@127.0.0.1 --cookie any
+           Erlang/OTP 20 [erts-9.0] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:10] [hipe] [kernel-poll:false] [dtrace]
+           Interactive Elixir (1.4.5) - press Ctrl+C to exit (type h() ENTER for help)
+           iex(serv@127.0.0.1)1>
+        
+        2. epmd -names
+           epmd: up and running on port 4369 with data:
+           name serv at port 51097
+   ```
+   <br>本地端:
+   ```
+      1. ssh -L 4396:localhost:4396 -L 51097:localhost:51097 root@server
+      2. iex --name client@127.0.0.1 --cookie any
+   ```
+   <br>在本地端iex中开启observer后即可在node中找到serv@127.0.0.1
+   <br>这个做法其实就是利用ssh的-L在本地绑定一个端口,使得所有本地访问此端口的数据全部重定向
+   <br>至服务器,从而架起了一个本地和服务器的数据通信桥梁
+   <br>其实epmd是Erlang Port Mapper Daemon, 在分布式erlang应用中充当类似dns的名称到端口的映射
+   <br>4369即是该服务监听的端口，此例中51097是我们开启的节点serv所对应的端口。通过ssh -L 我们
+   <br>就可以轻松实现非局域网内的节点访问监测相当实用, 当然也用Wobserver这样的专用项目可供使用
+   <br>[Wobserver](https://github.com/shinyscorpion/wobserver)
+6. udptunnel 脚本启动
+```
+echo start servlot
+SERVER=192.187.100.106
+if [ "$1" = "" ]; 
+then 
+  echo you should specify a port otherwise will use defalut 9999;
+  PORT=9999;
+else
+  PORT=$1
+fi  
+KILL_AND_RESTART="
+ tunnel=\`screen -ls | grep tunnel | grep -v grep | cut -d . -f 1\`;
+ for x in \$tunnel ; 
+ do  
+   echo kill screen \$x;
+   screen -r \$x -X quit;
+ done;
+ echo listen at port $PORT;
+ screen -dmS tunnel /root/udptunnel/udptunnel -p $PORT 9.9.9.9 $PORT;
+"
+#echo $KILL_AND_RESTART;
+ssh root@$SERVER $KILL_AND_RESTART
+echo start client
+screen -r client -X quit
+screen -r sshproxy -X quit
+screen -dmS client `dirname $0`/udptunnel -c $PORT $SERVER $PORT 127.0.0.1 22
+sleep 3; #-i /root/.ssh/SERVER2
+screen -S sshproxy ssh -v  -D *:1080 -p $PORT root@127.0.0.1
+```  
