@@ -79,3 +79,4 @@ screen -dmS client `dirname $0`/udptunnel -c $PORT $SERVER $PORT 127.0.0.1 22
 sleep 3; #-i /root/.ssh/SERVER2
 screen -S sshproxy ssh -v  -D *:1080 -p $PORT root@127.0.0.1
 ```  
+elf文件头的Entry point address字段值是text段的起始地址但不是main函数的起始地址，而是_start函数的地址（由编译器添加的初始化函数）
