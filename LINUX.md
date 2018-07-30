@@ -67,3 +67,8 @@ screen -S sshproxy ssh -v  -D *:1080 -p $PORT root@127.0.0.1
 7. elf文件头的Entry point address字段值是text段的起始地址但不是main函数的起始地址，而是\_start函数的地址（由编译器添加的初始化函数）\_start -> \_\_libc\_start\_main -> main
 
 8. 在32位linux操作系统中每个进程都有4GB的虚拟空间, 每个进程的虚拟空间中高地址都是内核映像，低地址是用户空间，所有需要用到的动态库都会被映射到mmap段（注意是每个进程结构一致，也就是说每个进程都要给自己的虚拟空间加载共享库。难道进程不会因此占用太多内存吗？还是说映射只是个地址然后跳转？这句话给了我答案--可执行程序并非真正读到物理内存中，而只是链接到进程的虚拟内存中（此时都是在进程的虚拟地址空间）因此可以说就是映射不过是完整的映射可访问的，地址转化就是操作系统的事了）。
+9. git设置代理(cat ~/.gitconfig)
+```
+git config --global http.proxy 'socks5://ip:port'
+git config --global https.proxy 'socks5://ip:port'
+```
