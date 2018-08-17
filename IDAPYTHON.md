@@ -36,4 +36,29 @@ GetInstructionList()可以获得当前处理器的所有指令，这个应该可
 
 GetRegisterList()可以获得当前处理器的所有寄存器名
 
+create_strlit(ea, endea)可以用来创建字符串，有的时候.rodata段被ida当做函数转换成汇编，可以用del_items(ea)来是当前地址的条目为unknown(MakeUnkn)再用create_strlit(ea, BADADDR)来创建字符串。endea用BADADDR则字符串长度由内核计算一般是以0x00结尾(C-style）
 
+将.rodata段的未定义或错误定义的数据转换为字符串脚本
+```
+from ida_bytes import ALOPT_IGNHEADS, ALOPT_IGNPRINT, ALOPT_IGNCLT, ALOPT_MAX4K
+start = 0x26bdbf
+end = SegEnd(start)
+OPS_ALL = ALOPT_IGNHEADS | ALOPT_IGNPRINT | ALOPT_IGNCLT | ALOPT_MAX4K 
+step = 4
+while start < end:
+    str_len = ida_bytes.get_max_strlit_length(start, STRTYPE_TERMCHR, OPS_ALL)
+    print "proc ", start, " len ", str_len
+    if str_len == 0:
+        start += 1
+        continue
+    str_end = start + str_len
+    str_start = start
+    while str_start < str_end:
+        del_items(str_start)
+        str_start += 1
+    create_strlit(start, start + str_len)
+    start += str_len
+```
+在ida中要添加函数的交叉应用光标置于函数处选择view -> Open subviews -> Cross references 右键Add cross-reference，删除类似
+ida反汇编中函数栈中的参数定义STR R0, [SP, #n + var_m]其中n是栈的深度(要考虑函数所有的堆栈操作)，m是变量和栈底的距离(猜测因为SP是变动的，所以以BP为基础具有唯一性)
+ida中如果误删数据类型（比如误删vtable）可以使用ida的区间分析强制ida重新分析一个区间内的bin。具体操作可以选中区间edit -> Code 会有Perform analysis or force conversion of the selected bytes to instruction(s)?的提示这时选择Analyze就好
