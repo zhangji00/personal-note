@@ -60,5 +60,21 @@ while start < end:
     start += str_len
 ```
 在ida中要添加函数的交叉应用光标置于函数处选择view -> Open subviews -> Cross references 右键Add cross-reference，删除类似
+
 ida反汇编中函数栈中的参数定义STR R0, [SP, #n + var_m]其中n是栈的深度(要考虑函数所有的堆栈操作)，m是变量和栈底的距离(猜测因为SP是变动的，所以以BP为基础具有唯一性)
+
 ida中如果误删数据类型（比如误删vtable）可以使用ida的区间分析强制ida重新分析一个区间内的bin。具体操作可以选中区间edit -> Code 会有Perform analysis or force conversion of the selected bytes to instruction(s)?的提示这时选择Analyze就好
+
+用红色标记所有寄存器函数调用(虚表函数,ex: BL R2)
+```
+import time
+for fun in Functions():
+    for i in FuncItems(fun):
+        if ida_ua.can_decode(i):
+            if print_insn_mnem(i).find("B") == 0:
+                if get_operand_type(i, 0) == o_reg and print_operand(i, 0) != "LR":
+                    print i
+                    set_color(i, CIC_ITEM, 0x0000ff)
+                    jumpto(i)
+                    time.sleep(7)
+```
