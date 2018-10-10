@@ -10,6 +10,7 @@ IDAPython由三个独立模块组成:
 3. https://github.com/idapython/src/tree/master/examples
 4. struct: https://blog.csdn.net/hgy413/article/details/7104304
 5. https://github.com/onethawt/idaplugins-list
+6. [ida逆向c++技巧](https://blog.0xbadc0de.be/archives/67)
 
 如下指令中call函数,IDA为了给重载函数生成唯一的名称，编译器使用符号重组来显示函数名称
 ```
@@ -59,7 +60,7 @@ while start < end:
     create_strlit(start, start + str_len)
     start += str_len
 ```
-在ida中要添加函数的交叉应用光标置于函数处选择view -> Open subviews -> Cross references 右键Add cross-reference，删除类似
+在ida中要添加函数的交叉引用光标置于函数处选择view -> Open subviews -> Cross references 右键Add cross-reference，删除类似
 
 ida反汇编中函数栈中的参数定义STR R0, [SP, #n + var_m]其中n是栈的深度(要考虑函数所有的堆栈操作)，m是变量和栈底的距离(猜测因为SP是变动的，所以以BP为基础具有唯一性)
 
@@ -78,4 +79,4 @@ for fun in Functions():
                     jumpto(i)
                     time.sleep(7)
 ```
-当ida反汇编超慢时，很可能是因为反汇编未结束就在Functions Window中搜索函数名导致的, DA's Functions window, as well as some other windows, presents sorted data. This means that for every function added, it sorts the entire view.所以出现这种情况直接关闭这个窗口就行了(把搜索的x点掉也可以)
+当ida反汇编超慢时，很可能是因为反汇编未结束就在Functions Window中搜索函数名导致的, DA's Functions window, as well as some other windows, presents sorted data. This means that for every function added, it sorts the entire view.所以出现这种情况直接关闭这个窗口就行了(把搜索的x点掉也可以)，有的时候IDA32的分析慢转到IDA64的就可以了

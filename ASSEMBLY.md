@@ -20,3 +20,8 @@
 .text:03191E8D                 and     al, 1
 ```
 以上代码ebx的值就是0x579CC54。先取出pop ebx指令的地址0x3191E80到ebx，再加上0x260ADD4，结果就是0x579CC54（跟ARM中取字符串的指令很像）。 饶了这么多其实就是取数据段byte_58A5266的值到al寄存器，并做相应处理
+3. 
+  [ios之CPU寄存器0](http://www.cocoachina.com/cms/wap.php?action=article&id=22140)
+  <br>[ios值CPU寄存器1](https://blog.cnbluebox.com/blog/2017/07/24/arm64-start/)
+
+在arm64中WZR和XZR是0寄存器，它们的值一直是0，用W/XZR代替0应该是编码优化问题
