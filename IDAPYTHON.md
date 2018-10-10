@@ -79,4 +79,4 @@ for fun in Functions():
                     jumpto(i)
                     time.sleep(7)
 ```
-当ida反汇编超慢时，很可能是因为反汇编未结束就在Functions Window中搜索函数名导致的, DA's Functions window, as well as some other windows, presents sorted data. This means that for every function added, it sorts the entire view.所以出现这种情况直接关闭这个窗口就行了(把搜索的x点掉也可以)，有的时候IDA32的分析慢转到IDA64的就可以了
+当ida反汇编超慢时，很可能是因为反汇编未结束就在Functions Window中搜索函数名导致的, DA's Functions window, as well as some other windows, presents sorted data. This means that for every function added, it sorts the entire view.所以出现这种情况直接关闭这个窗口就行了(把搜索的x点掉也可以)
