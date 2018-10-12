@@ -4,3 +4,5 @@
 .overload('[B') \\byteArray
 .overloda('[C') \\charArray
 ```
+Interceptor.attach(Module.findBaseAddress('libfoo.so').add(0x1234), ...
+<br>Just keep in mind that the address needs to have its least significant bit set to 1 for Thumb functions
