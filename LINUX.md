@@ -34,34 +34,35 @@ awk处理第一行时haha是最后一个字段$NF == haha => ++State[haha]awk处
 在本地端iex中开启observer后即可在node中找到serv@127.0.0.1这个做法其实就是利用ssh的-L在本地绑定一个端口,使得所有本地访问此端口的数据全部重定向至服务器,从而架起了一个本地和服务器的数据通信桥梁其实epmd是Erlang Port Mapper Daemon, 在分布式erlang应用中充当类似dns的名称到端口的映射4369即是该服务监听的端口，此例中51097是我们开启的节点serv所对应的端口。通过ssh -L 我们就可以轻松实现非局域网内的节点访问监测相当实用, 当然也用Wobserver这样的专用项目可供使用[Wobserver](https://github.com/shinyscorpion/wobserver)
 
 6. udptunnel 脚本启动
+
 ```
-echo start servlot
-SERVER=192.187.100.106
-if [ "$1" = "" ]; 
-then 
-  echo you should specify a port otherwise will use defalut 9999;
-  PORT=9999;
-else
-  PORT=$1
-fi  
-KILL_AND_RESTART="
- tunnel=\`screen -ls | grep tunnel | grep -v grep | cut -d . -f 1\`;
- for x in \$tunnel ; 
- do  
-   echo kill screen \$x;
-   screen -r \$x -X quit;
- done;
- echo listen at port $PORT;
- screen -dmS tunnel /root/udptunnel/udptunnel -p $PORT 9.9.9.9 $PORT;
-"
-#echo $KILL_AND_RESTART;
-ssh root@$SERVER $KILL_AND_RESTART
-echo start client
-screen -r client -X quit
-screen -r sshproxy -X quit
-screen -dmS client `dirname $0`/udptunnel -c $PORT $SERVER $PORT 127.0.0.1 22
-sleep 3; #-i /root/.ssh/SERVER2
-screen -S sshproxy ssh -v  -D *:1080 -p $PORT root@127.0.0.1
+  echo start servlot
+  SERVER=192.187.100.106
+  if [ "$1" = "" ]; 
+  then 
+    echo you should specify a port otherwise will use defalut 9999;
+    PORT=9999;
+  else
+    PORT=$1
+  fi  
+  KILL_AND_RESTART="
+   tunnel=\`screen -ls | grep tunnel | grep -v grep | cut -d . -f 1\`;
+   for x in \$tunnel ; 
+   do  
+     echo kill screen \$x;
+     screen -r \$x -X quit;
+   done;
+   echo listen at port $PORT;
+   screen -dmS tunnel /root/udptunnel/udptunnel -p $PORT 9.9.9.9 $PORT;
+  "
+  #echo $KILL_AND_RESTART;
+  ssh root@$SERVER $KILL_AND_RESTART
+  echo start client
+  screen -r client -X quit
+  screen -r sshproxy -X quit
+  screen -dmS client `dirname $0`/udptunnel -c $PORT $SERVER $PORT 127.0.0.1 22
+  sleep 3; #-i /root/.ssh/SERVER2
+  screen -S sshproxy ssh -v  -D :1080 -p $PORT root@127.0.0.1
 ```  
 
 7. elf文件头的Entry point address字段值是text段的起始地址但不是main函数的起始地址，而是\_start函数的地址（由编译器添加的初始化函数）\_start -> \_\_libc\_start\_main -> main
@@ -72,3 +73,11 @@ screen -S sshproxy ssh -v  -D *:1080 -p $PORT root@127.0.0.1
 git config --global http.proxy 'socks5://ip:port'
 git config --global https.proxy 'socks5://ip:port'
 ```
+
+当系统出现写入错误Read-only file system，mount -o remount,rw / 也失败时
+```
+blockdev --setrw /dev/sda1
+hdparm -r 0 /dev/sda1
+reboot
+```
+[关于linux mmap很好的博客](https://www.cnblogs.com/huxiao-tee/p/4660352.html)

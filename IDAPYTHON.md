@@ -80,3 +80,23 @@ for fun in Functions():
                     time.sleep(7)
 ```
 当ida反汇编超慢时，很可能是因为反汇编未结束就在Functions Window中搜索函数名导致的, DA's Functions window, as well as some other windows, presents sorted data. This means that for every function added, it sorts the entire view.所以出现这种情况直接关闭这个窗口就行了(把搜索的x点掉也可以)
+
+```
+#定位so基址
+name = "lib*.so"
+for m in Modules():
+    if m.name.find(name):
+        print(hex(m.base))
+
+#对ea所有的引用添加trace断点
+#添加断点，要先调用add_bpt再调用属性修改函数修改断点属性，这样就能设置一个Trace断点
+#还可以通过set_bpt_cond/3来为断点添加条件
+for addr in CodeRefsTo(ea, 0): #1的话会将该地址的添一条指令的ea也计入引用
+    idc.add_bpt(addr)
+    idc.set_bpt_attr(addr, BPTATTR_FLAGS, BPT_TRACE | BPT_ENABLED)
+
+#删除所有断点
+for i in range(0, idc.get_bpt_qty()):
+    ea=idc.get_bpt_ea(i) #如果删除不掉，应该用0
+    idc.del_bpt(ea)
+```
