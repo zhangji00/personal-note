@@ -91,7 +91,7 @@ for m in Modules():
 #对ea所有的引用添加trace断点
 #添加断点，要先调用add_bpt再调用属性修改函数修改断点属性，这样就能设置一个Trace断点
 #还可以通过set_bpt_cond/3来为断点添加条件
-for addr in CodeRefsTo(ea, 0): #1的话会将该地址的添一条指令的ea也计入引用
+for addr in CodeRefsTo(ea, 0): #1的话会将该地址的前一条指令的ea也计入引用
     idc.add_bpt(addr)
     idc.set_bpt_attr(addr, BPTATTR_FLAGS, BPT_TRACE | BPT_ENABLED)
 
@@ -99,4 +99,30 @@ for addr in CodeRefsTo(ea, 0): #1的话会将该地址的添一条指令的ea也
 for i in range(0, idc.get_bpt_qty()):
     ea=idc.get_bpt_ea(i) #如果删除不掉，应该用0
     idc.del_bpt(ea)
+
+#下断寄存器跳转(虚表函数调用)
+base = 0x76534000
+ea = 0x2315F6C
+bpts = []
+MakeFunction(base + ea)
+for i in FuncItems(base + ea):
+    if print_insn_mnem(i).find("BL") != -1:
+        if get_operand_type(i, 0) == o_reg:
+            print(i, GetDisasm((i)))
+            bpts.append(i)
+
+#置位elang以选择python脚本的Condition。
+#如果不置位add_bpt则会默认选择IDC格式条件脚本，set_bpt_cond添加python会报错
+m={}
+BPT_PYTHON = 1 << idaapi.BPT_ELANG_SHIFT 
+for bpt in bpts:
+  r = print_operand(bpt, 0)
+  cnd = "m[{bpt} - base] = (idc.get_reg_value(\"{r}\") - base)\n1==0".format(bpt=bpt, r=r)
+  idc.add_bpt(bpt) 
+  idc.set_bpt_attr(bpt, BPTATTR_FLAGS, BPT_TRACE | BPT_ENABLED | BPT_PYTHON)
+  idc.set_bpt_cond(bpt,cnd)
+
+for k in m:
+    Jump(k)
+    set_cmt("{v}".format(v=hex(k[v])[:-1]))
 ```
