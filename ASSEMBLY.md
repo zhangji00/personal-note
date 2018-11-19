@@ -58,3 +58,9 @@ OffSet 就是该需重定位符号在GOT表中的位置，Info(低2字节有效)
 0x16==22
 #define R_ARM_JUMP_SLOT         22      /* Create PLT entry */
 ```
+```
+#交换R1和R2的内容, 两次xor可以用来做加解密
+xor R1, R2
+xor R2, R1
+xor R1, R2
+```
